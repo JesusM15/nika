@@ -106,21 +106,34 @@ int main(){
 
         if(strcmp(command, "mycat") == 0){
             arg1 = strtok(NULL, " ");
-            readFile(arg1);
+            if(arg1 != NULL){
+                readFile(arg1);
+            } else {
+                printf(YELLOW "Error: Se espera un argumento.\n" RESET);
+            }
         } else if (strcmp(command, "mycat>") == 0){
             arg1 = strtok(NULL, " ");
-            crearArchivo(arg1);
+            if(arg1 != NULL){
+                crearArchivo(arg1);
+            } else {
+                printf(YELLOW "Error: Se espera un argumento.\n" RESET);
+
+            }
         } else if(strcmp(command, "mycp") == 0){
             arg1 = strtok(NULL, " ");
             arg2 = strtok(NULL, " ");
-
-            copyFile(arg1, arg2);
+            
+            if(arg1 != NULL && arg2 != NULL){
+              copyFile(arg1, arg2);
+            }else {
+                printf(YELLOW "Error: Se esperan dos argumentos, origen y destino.\n" RESET);
+            }
 
         } else if(strcmp(command, "remove") == 0){
             arg1 = strtok(NULL, " ");
 
             if(arg1 == NULL){
-                printf(RED "Error: Falta el nombre del archivo.\n" RESET);
+                printf(YELLOW "Error: Falta el nombre del archivo.\n" RESET);
             } else {
                 
                 if(unlink(arg1) == 0){
