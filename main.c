@@ -53,7 +53,7 @@ void readFile(char *name){
         perror(RED "Error al abrir el archivo." RESET);
     }
     while((readed_bytes = read(fd, &c, 1)) > 0){
-        printf("%c", c);
+        write(1, &c, 1);
     }
     printf("\n");
 
