@@ -8,6 +8,20 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <ctype.h>
+
+void trim(char *str){
+    char *end;
+
+    while(isspace((unsigned char)*str)) str++;
+
+    if(*str == 0) return;
+
+    end = str + strlen(str) - 1;
+    while(end > str && isspace((unsigned char)*end)) end--;
+
+    end[1] = '\0';
+}
 
 void limpiarEntrada(){
     int car = 0;
@@ -87,6 +101,8 @@ void copyFile(char *source, char *destiny){
 int main(){
 
     char buffer[256];
+    char *commands;
+    
     char *command;
     char *arg1;
     char *arg2;
@@ -99,6 +115,18 @@ int main(){
         if(fgets(buffer, sizeof(buffer), stdin) == NULL) break;
         
         buffer[strcspn(buffer, "\n")] = 0; // caracter nulo.
+
+        commands = strtok(buffer, "|");
+
+        while(commands != NULL){
+            printf("%s\n", commands);
+            commands = strtok(NULL, commands);
+
+            command = commands;
+            trim(command);
+            command = strtok(command, " ");
+            printf("%s", command);
+        }
         
         command = strtok(buffer, " ");
 
