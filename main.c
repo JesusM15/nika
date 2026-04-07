@@ -95,7 +95,7 @@ int main(){
     int fd;
 
     while(1){
-        printf(BLUE "my-terminal" RESET ":" GREEN "~$ " RESET);
+        printf(BLUE "mi-terminal" RESET ":" GREEN "~$ " RESET);
         if(fgets(buffer, sizeof(buffer), stdin) == NULL) break;
         
         buffer[strcspn(buffer, "\n")] = 0; // caracter nulo.
