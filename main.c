@@ -84,17 +84,26 @@ void readFile(char *name){
 }
 
 void copyFile(char *source, char *destiny){
-    
-    int fd_source = open(source, O_RDONLY);
-    if (fd_source == -1){
-        perror(RED "Error al abrir el archivo fuente" RESET);
+    int fd_source, fd_destiny;
+    if(destiny == NULL){
+        fd_source = 0;
+        fd_destiny = open(source, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    } else {
+        fd_source = open(source, O_RDONLY);
+        fd_destiny = open(destiny, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    }
+
+
+    if(fd_source == -1){
+        perror(RED "Error al cargar el archivo de origen." RESET);
+        // close(fd_source);
         return;
     }
 
-    int fd_destiny = open(destiny, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
     if(fd_destiny == -1){
         perror(RED "Error al crear el archivo destino." RESET);
-        close(fd_source);
+//        close(fd_source);
         return;
     }
 
@@ -104,7 +113,9 @@ void copyFile(char *source, char *destiny){
     }
 
     close(fd_destiny);
-    close(fd_source);
+    if(fd_source != 0){
+        close(fd_source);
+    }
 }
 
 int main(){
@@ -211,11 +222,8 @@ int main(){
                     arg1 = args[1];
                     arg2 = args[2];
                     
-                if(arg1 != NULL && arg2 != NULL){
                     copyFile(arg1, arg2);
-                    }else {
-                        printf(YELLOW "Error: Se esperan dos argumentos, origen y destino.\n" RESET);
-                    }
+               
                     exit(0);
                 } else if(strcmp(args[0], "remove") == 0){
                     arg1 = args[1];

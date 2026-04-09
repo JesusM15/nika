@@ -1,0 +1,7 @@
+alumnos.txt
+archivoprueba
+carpetas
+finales.txt
+lista.txt
+main
+main.c
