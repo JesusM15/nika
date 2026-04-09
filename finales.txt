@@ -181,13 +181,9 @@ int main(){
                 int i = 0;
                 char *token = strtok(current_pos, " ");
                 while(token != NULL){
+
                     token[strcspn(token, "\r\n")] = 0;
-
-                    if(token[0] == '"') token++;
                     
-                    int len = strlen(token);
-                    if(len > 0 && token[len-1] == '"') token[len-1] = '\0';
-
                     args[i++] = token;
                     token = strtok(NULL, " "); // continua jas
                 }
