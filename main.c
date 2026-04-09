@@ -9,6 +9,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <sys/wait.h>
 
 void trim(char *str){
     char *end;
@@ -107,6 +109,12 @@ int main(){
     char *arg1;
     char *arg2;
 
+    char *current_pos;
+    char *next_pipe;
+
+    int pipe_fds[2];
+    int input = 0;
+
     ssize_t bytes_written, bytes_read;
     int fd;
 
@@ -114,67 +122,132 @@ int main(){
         printf(BLUE "mi-terminal" RESET ":" GREEN "~$ " RESET);
         if(fgets(buffer, sizeof(buffer), stdin) == NULL) break;
         
-        buffer[strcspn(buffer, "\n")] = 0; // caracter nulo.
+        buffer[strcspn(buffer, "\r\n")] = 0; // caracter nulo.
 
-        commands = strtok(buffer, "|");
+        current_pos = buffer;
+        input = 0;
 
-        while(commands != NULL){
-            printf("%s\n", commands);
-            commands = strtok(NULL, commands);
+        while(current_pos != NULL && *current_pos != '\0'){
+            next_pipe = strchr(current_pos, '|'); 
 
-            command = commands;
-            trim(command);
-            command = strtok(command, " ");
-            printf("%s", command);
-        }
-        
-        command = strtok(buffer, " ");
-
-        if(command == NULL) continue;
-
-        if(strcmp(command, "mycat") == 0){
-            arg1 = strtok(NULL, " ");
-            if(arg1 != NULL){
-                readFile(arg1);
-            } else {
-                printf(YELLOW "Error: Se espera un argumento.\n" RESET);
+            if(next_pipe != NULL){
+                *next_pipe = '\0';
             }
-        } else if (strcmp(command, "mycat>") == 0){
-            arg1 = strtok(NULL, " ");
-            if(arg1 != NULL){
-                crearArchivo(arg1);
-            } else {
-                printf(YELLOW "Error: Se espera un argumento.\n" RESET);
 
+            // no considerar espacios
+            while (isspace((unsigned char)*current_pos)) current_pos++;
+
+            if(next_pipe != NULL){
+                if(pipe(pipe_fds) == -1){
+                    perror("pipe");
+                    break;
+                }
             }
-        } else if(strcmp(command, "mycp") == 0){
-            arg1 = strtok(NULL, " ");
-            arg2 = strtok(NULL, " ");
+
+            pid_t pid = fork();
             
-            if(arg1 != NULL && arg2 != NULL){
-              copyFile(arg1, arg2);
-            }else {
-                printf(YELLOW "Error: Se esperan dos argumentos, origen y destino.\n" RESET);
-            }
-
-        } else if(strcmp(command, "remove") == 0){
-            arg1 = strtok(NULL, " ");
-
-            if(arg1 == NULL){
-                printf(YELLOW "Error: Falta el nombre del archivo.\n" RESET);
-            } else {
+            if(pid == 0){
                 
-                if(unlink(arg1) == 0){
-                    printf(GREEN "Archivo '%s' eliminado correctamente.\n" RESET, arg1);
-                } else {
-                    perror(RED "Error al intentar eliminar" RESET);
+                if(input != 0){
+                    dup2(input, 0);
+                    close(input);
                 }
 
+                if(next_pipe){
+                    close(pipe_fds[0]);
+                    dup2(pipe_fds[1], 1);
+                    close(pipe_fds[1]);
+                }
+
+                char *args[255];
+                int i = 0;
+                char *token = strtok(current_pos, " ");
+                while(token != NULL){
+
+                    token[strcspn(token, "\r\n")];
+                    
+                    args[i++] = token;
+                    token = strtok(NULL, " ");
+                }
+                args[i] = NULL;
+
+                if(args[0] == NULL) exit(0);
+
+
+                if(strcmp(args[0], "mycat") == 0){
+                    if(args[1] != NULL){
+                        readFile(args[1]);
+                    } else {
+                        printf(YELLOW "Error: Se espera un argumento.\n" RESET);
+                    }
+                    exit(0);
+                } else if (strcmp(args[0], "mycat>") == 0){
+                    if(args[1] != NULL){
+                        crearArchivo(args[1]);
+                    } else {
+                        printf(YELLOW "Error: Se espera un argumento.\n" RESET);
+
+                    }
+                    exit(0);
+                } else if(strcmp(args[0], "mycp") == 0){
+                    arg1 = args[1];
+                    arg2 = args[2];
+                    
+                if(arg1 != NULL && arg2 != NULL){
+                    copyFile(arg1, arg2);
+                    }else {
+                        printf(YELLOW "Error: Se esperan dos argumentos, origen y destino.\n" RESET);
+                    }
+                    exit(0);
+                } else if(strcmp(args[0], "remove") == 0){
+                    arg1 = args[1];
+
+                    if(arg1 == NULL){
+                        printf(YELLOW "Error: Falta el nombre del archivo.\n" RESET);
+                    } else {
+                        
+                        if(unlink(arg1) == 0){
+                            printf(GREEN "Archivo '%s' eliminado correctamente.\n" RESET, arg1);
+                        } else {
+                            perror(RED "Error al intentar eliminar" RESET);
+                        }
+
+                    }
+                    exit(0);
+                }
+                else if(strcmp(args[0], "exit") == 0){
+                    break;
+                } else {
+                    execvp(args[0], args);
+                    exit(1);
+                }
+
+
+            } else if (pid > 0){
+                wait(NULL);
+
+                if(input != 0) close(input);
+
+                if(next_pipe){
+                    close(pipe_fds[1]);
+                    input = pipe_fds[0];
+                } else {
+                    input = 0;
+                }
+
+
             }
+
+            if(next_pipe != NULL){
+                current_pos = next_pipe + 1;
+            } else {
+                current_pos = NULL;
+            }
+
         }
-        else if(strcmp(command, "exit") == 0){
-            break;
-        }
+
+        // command = strtok(buffer, " ");
+    
     }
 
     return 0;
