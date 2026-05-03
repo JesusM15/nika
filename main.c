@@ -11,6 +11,10 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <scheduler.h>
+extern Process *readyQueue;
+
+
 
 void trim(char *str){
     char *end;
@@ -167,9 +171,30 @@ int main(){
             strcpy(temp, current_pos);
             char *comandoprimero = strtok(temp, " ");
 
-            if(comandoprimero != NULL && strcmp(comandoprimero, "exit") == 0){
-                activo = 0;
-                break;
+            if(comandoprimero != NULL){
+                if(strcmp(comandoprimero, "mkprocess") == 0){
+                    char *pid = strtok(NULL, " ");
+                    char *burst_str = strtok(NULL, " ");
+                    if(pid && burst_str){
+                        mkprocess(pid, atoi(burst_str));
+                    } else {
+                        printf("Uso: mkprocess [nombre] [burst]\n");
+                    }
+                    current_pos = (next_pipe != NULL) ? next_pipe + 1 : NULL;
+                    continue;
+                }
+
+                if(strcmp(comandoprimero, "lstprocss") == 0){
+                    lstprocss();
+                    current_pos = (next_pipe != NULL) ? next_pipe + 1 : NULL;
+                    continue;
+                }
+                
+                if(strcmp(comandoprimero, "exit") == 0){
+                    activo = 0;
+                    break;
+                }
+
             }
 
             pid_t pid = fork();
