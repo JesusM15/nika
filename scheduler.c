@@ -76,10 +76,49 @@ void printAndClean(const char *algorithm, float avgWaitingTime, float avgTurnAro
     printf("Promedio Turn Around Time:       %.2f\n", avgTurnAroundTime);
 }
 
+void sortByBurstTime(){
+    int flag;
+    Process *current = readyQueue;
+    Process *previous = NULL;
+
+    if(current == NULL || current->next == NULL){
+        return;
+    }
+
+    do {
+        flag = 0;
+        current = readyQueue;
+
+        while(current->next != previous){
+            
+            if(current->burst_time > current->next->burst_time){
+                // intercambiar por propiedades
+                int tmp_burst = current->burst_time;
+                current->burst_time = current->next->burst_time;
+                current->next->burst_time = tmp_burst;
+
+                int tmp_rem = current->remaining_time;
+                current->remaining_time = current->next->remaining_time;
+                current->next->remaining_time = tmp_rem;
+
+                char tmp_name[32];
+                strcpy(tmp_name, current->name);
+                strcpy(current->name, current->next->name);
+                strcpy(current->next->name, tmp_name);
+
+                flag = 1;
+            }
+            current = current->next;
+        }
+        previous = current;
+
+    } while(flag);
+}
+
 void simular_fcfs(){
     float waitingTimeAvg = 0;
     float turnAroundAvg = 0;
-    int processCounter = count_processes;
+    int processCounter = count_processes();
 
     int clock = 0;
     // turnaround = waitingTotalTime + burstTime
