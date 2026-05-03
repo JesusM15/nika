@@ -152,3 +152,42 @@ void simular_fcfs(){
     printAndClean("FCFS", waitingTimeAvg, turnAroundAvg);
 }
 
+void simular_sjf(){
+    sortByBurstTime();
+    
+    float waitingTimeAvg = 0;
+    float turnAroundAvg = 0;
+    int processCounter = count_processes();
+
+    int clock = 0;
+    // turnaround = waitingTotalTime + burstTime
+    if(readyQueue == NULL) {
+        printf("Cola de procesos vacia.\n");
+        return;
+    }
+
+
+    Process *current = readyQueue; 
+
+    while(current != NULL){
+        current->waiting = clock;
+        printf("Proceso %s asignado al CPU, Tiempo Actual: %d.\n", current->name, clock);
+
+        clock += current->burst_time;
+        current->remaining_time = 0;
+        // calculos
+
+        current->turnaround = current->waiting + current->burst_time;
+        
+        printf("Proceso %s sale del CPU, Tiempo Actual: %d.\n", current->name, clock);
+        waitingTimeAvg += current->waiting;
+        turnAroundAvg += current->turnaround;
+
+        current = current->next;
+    }
+
+    waitingTimeAvg = waitingTimeAvg / processCounter;
+    turnAroundAvg = turnAroundAvg / processCounter;
+
+    printAndClean("SJF", waitingTimeAvg, turnAroundAvg);
+}
