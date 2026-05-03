@@ -77,9 +77,9 @@ void printAndClean(const char *algorithm, float avgWaitingTime, float avgTurnAro
 }
 
 void simular_fcfs(){
-    int waitingTimeAvg = 0;
-    int turnAroundAvg = 0;
-    int processCounter = 0;
+    float waitingTimeAvg = 0;
+    float turnAroundAvg = 0;
+    int processCounter = count_processes;
 
     int clock = 0;
     // turnaround = waitingTotalTime + burstTime
@@ -106,8 +106,6 @@ void simular_fcfs(){
 
         current = current->next;
     }
-
-    processCounter = count_processes();
 
     waitingTimeAvg = waitingTimeAvg / processCounter;
     turnAroundAvg = turnAroundAvg / processCounter;
