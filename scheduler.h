@@ -22,6 +22,6 @@ void mkprocess(char *name, int burst);
 void lstprocss();
 void simular_fcfs();
 void simular_sfj();
-void simular_rr();
+void simular_rr(int quantum);
 
 #endif

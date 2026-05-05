@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define QUANTUM 10
+
 Process *readyQueue = NULL; // inicio de la cola.
 
 void mkprocess(char *name, int burst){
@@ -115,6 +117,21 @@ void sortByBurstTime(){
     } while(flag);
 }
 
+void sendToTheEnd(){
+    if(readyQueue == NULL || readyQueue->next == NULL) return;
+
+    Process *head = readyQueue;
+    readyQueue = readyQueue->next;
+
+    Process *tmp = readyQueue;
+    // recorriendo cosillas.
+    while(tmp->next != NULL){
+        tmp = tmp->next;
+    }
+    tmp->next = head; // el primero ahora es el ultimo.
+    head->next = NULL;
+}
+
 void simular_fcfs(){
     float waitingTimeAvg = 0;
     float turnAroundAvg = 0;
@@ -190,4 +207,70 @@ void simular_sjf(){
     turnAroundAvg = turnAroundAvg / processCounter;
 
     printAndClean("SJF", waitingTimeAvg, turnAroundAvg);
+}
+
+// round-robin algorithm only
+
+void simular_rr(int quantum){
+    int quantum;
+    printf("Ingrese el valor del Quantum: ");
+    scanf("%d", &quantum);
+
+    float totalW = 0, totalT = 0;
+    int clock = 0;
+    int count = count_processes();
+
+    // Auxiliar para guardar el orden de terminacion.
+    Process *finishedQueue = NULL;
+
+    if(readyQueue == NULL) return;
+
+    while(readyQueue != NULL){
+        Process *current = readyQueue;
+
+        printf("Proceso %s asignado al CPU, Tiempo Actual: %d.\n", current->name, clock);
+
+        if(current->remaining_time > quantum){
+            
+            clock += quantum;
+            current->remaining_time -= quantum;
+            printf("Proceso %s sale por fin de Quantum, Tiempo Actual: %d\n", current->name, clock);
+
+            // sacar y mover al final
+            readyQueue = readyQueue->next;
+            current->next = NULL;
+
+            Process *tmp = readyQueue;
+            while(tmp->next != NULL) tmp = tmp->next;
+            tmp->next = current;
+        } else {
+            clock += current->remaining_time;
+            current->remaining_time = 0;
+
+            current->turnaround = clock;
+            current->waiting = current->turnaround - current->burst_time;
+
+            printf("Proceso %s sale del CPU, Tiempo Actual: %d.\n", current->name, clock);
+
+            readyQueue = readyQueue->next;
+            current->next = NULL;
+
+            if(finishedQueue == NULL){
+                finishedQueue = current;
+            } else {
+                Process *tmpAux = finishedQueue;
+                while(tmpAux->next != NULL){
+                    tmpAux = tmpAux->next;
+                }
+                tmpAux->next = current;
+            }
+
+            totalW += current->waiting;
+            totalT += current->turnaround;
+        }
+    }
+
+    readyQueue = finishedQueue;
+
+    printAndClean("Round Robin", totalW / count, totalT / count);
 }
