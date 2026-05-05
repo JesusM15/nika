@@ -189,6 +189,26 @@ int main(){
                     current_pos = (next_pipe != NULL) ? next_pipe + 1 : NULL;
                     continue;
                 }
+
+                if(strcmp(comandoprimero, "fcfs") == 0){
+                    simular_fcfs();
+                    current_pos = (next_pipe != NULL) ? next_pipe + 1 : NULL;
+                    continue;
+                }
+
+
+                if(strcmp(comandoprimero, "sfj") == 0){
+                    simular_sfj();
+                    current_pos = (next_pipe != NULL) ? next_pipe + 1 : NULL;
+                    continue;
+                }
+
+
+                if(strcmp(comandoprimero, "round-robin") == 0){
+                    simular_rr();
+                    current_pos = (next_pipe != NULL) ? next_pipe + 1 : NULL;
+                    continue;
+                }
                 
                 if(strcmp(comandoprimero, "exit") == 0){
                     activo = 0;
