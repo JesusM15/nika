@@ -211,7 +211,7 @@ void simular_sjf(){
 
 // round-robin algorithm only
 
-void simular_rr(int quantum){
+void simular_rr(){
     int quantum;
     printf("Ingrese el valor del Quantum: ");
     scanf("%d", &quantum);
@@ -240,9 +240,17 @@ void simular_rr(int quantum){
             readyQueue = readyQueue->next;
             current->next = NULL;
 
-            Process *tmp = readyQueue;
-            while(tmp->next != NULL) tmp = tmp->next;
-            tmp->next = current;
+            if(readyQueue == NULL){
+                readyQueue = current;
+            } else {
+                Process *tmp = readyQueue;
+                while(tmp->next != NULL) {
+                    tmp = tmp->next;
+                }
+                tmp->next = current;
+            }
+            
+
         } else {
             clock += current->remaining_time;
             current->remaining_time = 0;
